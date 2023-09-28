@@ -1,5 +1,7 @@
 /// <reference types="cypress" />
 
+const { table } = require("console");
+
 describe("First test suite", () => {
   it("first test", () => {
     cy.visit("/");
@@ -145,5 +147,49 @@ describe("First test suite", () => {
         cy.wrap(date).invoke("prop", "value").should("contain", dateAssert);
         cy.wrap(date).should("have.value", dateAssert);
       });
+  });
+  it("lists", () => {
+    cy.visit("/");
+    cy.get("nav nb-select").click();
+    cy.get(".options-list").contains("Dark").click();
+    cy.get("nav nb-select").should("contain", "Dark");
+
+    cy.get("nav nb-select").then((dropDown) => {
+      cy.wrap(dropDown).click();
+      cy.get(".options-list nb-option").each((listItem, index) => {
+        const item = listItem.text().trim();
+        cy.wrap(listItem).click();
+        cy.wrap(dropDown).should("contain", item);
+        if (index < 3) {
+          cy.wrap(dropDown).click();
+        }
+      });
+    });
+  });
+  it.only("table tests", () => {
+    cy.visit("/");
+    cy.contains("Tables & Data").click();
+    cy.contains("Smart Table").click();
+    cy.get("tbody")
+      .contains("tr", "Larry")
+      .then((tableRow) => {
+        cy.wrap(tableRow).find(".nb-edit").click();
+        cy.wrap(tableRow).find('[placeholder="Age"]').clear().type(55);
+        cy.wrap(tableRow).find(".nb-checkmark").click();
+        cy.wrap(tableRow).find("td").eq(6).should("contain", "55");
+      });
+
+    cy.get("thead .nb-plus").click();
+    cy.get('thead tr').eq(2).then(trow => {
+      cy.wrap(trow).find('[placeholder="First Name"]').type('Jhon')
+      cy.wrap(trow).find('[placeholder="Last Name"]').type('Johny')
+      cy.wrap(trow).find('[placeholder="E-mail"]').type('tomaC@gmail.com');
+      cy.wrap(trow).find(".nb-checkmark").click();
+    })
+    cy.get('tbody tr').first().find('td').then(newRow => {
+      cy.wrap(newRow).eq(2).should("contain", "Jhon");
+      cy.wrap(newRow).eq(3).should("contain", "Johny");
+      cy.wrap(newRow).eq(5).should("contain", "tomaC@gmail.com");
+    })
   });
 });
