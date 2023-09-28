@@ -166,7 +166,7 @@ describe("First test suite", () => {
       });
     });
   });
-  it.only("table tests", () => {
+  it("table tests", () => {
     cy.visit("/");
     cy.contains("Tables & Data").click();
     cy.contains("Smart Table").click();
@@ -180,16 +180,57 @@ describe("First test suite", () => {
       });
 
     cy.get("thead .nb-plus").click();
-    cy.get('thead tr').eq(2).then(trow => {
-      cy.wrap(trow).find('[placeholder="First Name"]').type('Jhon')
-      cy.wrap(trow).find('[placeholder="Last Name"]').type('Johny')
-      cy.wrap(trow).find('[placeholder="E-mail"]').type('tomaC@gmail.com');
-      cy.wrap(trow).find(".nb-checkmark").click();
-    })
-    cy.get('tbody tr').first().find('td').then(newRow => {
-      cy.wrap(newRow).eq(2).should("contain", "Jhon");
-      cy.wrap(newRow).eq(3).should("contain", "Johny");
-      cy.wrap(newRow).eq(5).should("contain", "tomaC@gmail.com");
-    })
+    cy.get("thead tr")
+      .eq(2)
+      .then((trow) => {
+        cy.wrap(trow).find('[placeholder="First Name"]').type("Jhon");
+        cy.wrap(trow).find('[placeholder="Last Name"]').type("Johny");
+        cy.wrap(trow).find('[placeholder="E-mail"]').type("tomaC@gmail.com");
+        cy.wrap(trow).find(".nb-checkmark").click();
+      });
+    cy.get("tbody tr")
+      .first()
+      .find("td")
+      .then((newRow) => {
+        cy.wrap(newRow).eq(2).should("contain", "Jhon");
+        cy.wrap(newRow).eq(3).should("contain", "Johny");
+        cy.wrap(newRow).eq(5).should("contain", "tomaC@gmail.com");
+      });
+
+    const age = [20, 30, 40, 200];
+    cy.wrap(age).each((age) => {
+      cy.get('thead [placeholder="Age"]').clear().type(age);
+      cy.wait(500);
+      cy.get("tbody tr").each((tableRow) => {
+        if (age === 200) {
+          cy.wrap(tableRow).should("contain", "No data found");
+        } else {
+          cy.wrap(tableRow).find("td").eq(6).should("contain", age);
+        }
+      });
+    });
   });
+
+  it('tooltips', () => {
+    cy.visit('/');
+    cy.contains('Modal & Overlays').click();
+    cy.contains('Tooltip').click();
+    cy.contains('nb-card', 'Colored Tooltips').contains('Default').click()
+    cy.get("nb-tooltip").should("contain", "This is a tooltip");
+  })
+
+  it.only('dialog box', () => {
+    cy.visit('/')
+    cy.contains('Tables & Data').click();
+    cy.contains('Smart Table').click()
+
+    const stub = cy.stub();
+    cy.on('window:confirm', stub);
+    cy.get("tbody tr").first().find(".nb-trash").click().then(() => {
+          expect(stub.getCall(0)).to.be.calledWith(
+            "Are you sure you want to delete?"
+          );
+        })
+
+})
 });
